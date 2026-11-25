@@ -1,0 +1,3 @@
+# Malaysia-first prayer timetable
+
+Waqt uses zone-specific JAKIM e-Solat published schedules, attempting direct retrieval and then the documented Solat.my yearly data relay. No astronomical fallback is shown. Users select a zone manually, with GPS optional for Qibla only. Dates use Asia/Kuala_Lumpur. Current-day cache is used only for the same zone and date. The zone list follows the SolatCal API zone names, based on JAKIM's list. Direct API access, relay CORS, date format, and timetable values must be verified on the live site against e-Solat. Waqt is independent and does not represent JAKIM. Donation collection and news publishing are not active.
