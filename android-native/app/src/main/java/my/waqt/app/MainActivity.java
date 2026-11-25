@@ -29,13 +29,15 @@ public class MainActivity extends Activity {
  private void requestExact(){if(!Alarms.allowed(this)&&Build.VERSION.SDK_INT>=31)try{startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())));}catch(Exception ignored){}}
  private void handle(JSONObject m)throws Exception{switch(m.optString("action")){
  case "enable":Alarms.enabled(this,true);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},78);else requestExact();Alarms.arm(this);break;
- case "disable":Alarms.enabled(this,false);Alarms.cancel(this);stopService(new Intent(this,AzanService.class));break;
- case "clear":Alarms.clear(this);stopService(new Intent(this,AzanService.class));break;
+ case "disable":Alarms.enabled(this,false);Alarms.cancel(this);Alarms.cancelTest(this);stopService(new Intent(this,AzanService.class));break;
+ case "clear":Alarms.clear(this);Alarms.cancelTest(this);stopService(new Intent(this,AzanService.class));break;
  case "schedule":Alarms.save(this,m.getString("zone"),m.getJSONArray("slots"),m.optBoolean("enabled"));Alarms.arm(this);break;
+ case "permissions":if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},78);else requestExact();break;
+ case "alarmTest":if(!Alarms.allowed(this)){requestExact();status("Benarkan penggera tepat, kemudian cuba ujian semula.");return;}Alarms.test(this);status("Ujian azan dijadualkan dalam 20 saat. Kunci skrin sekarang.");return;
  case "test":startForegroundService(new Intent(this,AzanService.class).putExtra("prayer",m.optString("prayer","Zohor")));break;
- case "stop":stopService(new Intent(this,AzanService.class));break;
+ case "stop":Alarms.cancelTest(this);stopService(new Intent(this,AzanService.class));break;
  }status(null);}
- private void status(String override){if(reply==null)return;try{boolean ready=Alarms.allowed(this)&&Alarms.isEnabled(this)&&Alarms.next(this)!=null;JSONObject j=new JSONObject();j.put("ready",ready);j.put("status",override!=null?override:!Alarms.isEnabled(this)?"Azan dimatikan.":!Alarms.allowed(this)?"Benarkan Penggera & peringatan dalam tetapan Android.":ready?"Penggera seterusnya telah disediakan.": "Pilih zon dan muat turun jadual dahulu.");reply.postMessage(j.toString());}catch(Exception ignored){}}
+ private void status(String override){if(reply==null)return;try{boolean ready=Alarms.allowed(this)&&Alarms.isEnabled(this)&&Alarms.next(this)!=null;JSONObject j=new JSONObject();j.put("ready",ready);JSONObject next=ready?Alarms.next(this):null;if(next!=null){j.put("nextAt",next.optLong("at"));j.put("nextPrayer",next.optString("prayer"));}j.put("status",override!=null?override:!Alarms.isEnabled(this)?"Azan dimatikan.":!Alarms.allowed(this)?"Benarkan Penggera & peringatan dalam tetapan Android.":ready?"Penggera seterusnya telah disediakan.": "Pilih zon dan muat turun jadual dahulu.");reply.postMessage(j.toString());}catch(Exception ignored){}}
  @Override public void onResume(){super.onResume();Alarms.arm(this);status(null);}
  @Override public void onBackPressed(){if(web.canGoBack())web.goBack();else super.onBackPressed();}
 }
