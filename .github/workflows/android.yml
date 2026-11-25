@@ -32,8 +32,14 @@ jobs:
           set +o pipefail
           yes | "$manager" --licenses >/dev/null
           set -o pipefail
-          "$manager" 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
-          command -v ffmpeg
+          if [ ! -f "$sdk/platforms/android-35/android.jar" ]; then "$manager" 'platforms;android-35'; fi
+          if [ ! -x "$sdk/build-tools/35.0.0/aapt2" ]; then "$manager" 'build-tools;35.0.0'; fi
+          test -f "$sdk/platforms/android-35/android.jar"
+          test -x "$sdk/build-tools/35.0.0/aapt2"
+      - name: Ensure audio conversion tool
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          ffmpeg -version | head -n 1
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'

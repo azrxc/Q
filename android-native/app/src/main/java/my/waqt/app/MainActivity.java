@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
  private WebView web; private JavaScriptReplyProxy reply;
  private static final String ORIGIN="https://appassets.androidplatform.net";
  @Override public void onCreate(Bundle state){super.onCreate(state);
-  web=new WebView(this);setContentView(web);web.setBackgroundColor(0xff123c34);
+  web=new WebView(this);setContentView(web);web.setBackgroundColor(0xff171717);
   WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setGeolocationEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
   WebViewAssetLoader loader=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
   web.setWebViewClient(new WebViewClient(){public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest r){return loader.shouldInterceptRequest(r.getUrl());}
