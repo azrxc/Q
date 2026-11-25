@@ -1,0 +1,14 @@
+package my.waqt.app;
+import android.app.*;import android.content.*;import android.media.*;import android.os.*;
+public class AzanService extends Service {
+ private MediaPlayer player; private AudioManager manager; private AudioFocusRequest focus;
+ @Override public IBinder onBind(Intent i){return null;}
+ @Override public int onStartCommand(Intent i,int flags,int id){if(i==null||"stop".equals(i.getAction())){stopSelf();return START_NOT_STICKY;}
+ String prayer=i.getStringExtra("prayer");if(prayer==null)prayer="Solat";NotificationManager nm=getSystemService(NotificationManager.class);NotificationChannel channel=new NotificationChannel("azan_playback","Azan Waqt",NotificationManager.IMPORTANCE_LOW);channel.setSound(null,null);nm.createNotificationChannel(channel);
+ PendingIntent stop=PendingIntent.getService(this,101,new Intent(this,AzanService.class).setAction("stop"),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+ PendingIntent open=PendingIntent.getActivity(this,102,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+ startForeground(51,new Notification.Builder(this,"azan_playback").setSmallIcon(R.drawable.waqt).setContentTitle("Waktu "+prayer).setContentText("Azan Waqt · Tekan Henti untuk berhenti").setContentIntent(open).addAction(new Notification.Action.Builder(null,"Henti",stop).build()).setOngoing(true).build());
+ release();try{AudioAttributes attr=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();manager=getSystemService(AudioManager.class);focus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT).setAudioAttributes(attr).setOnAudioFocusChangeListener(change->{if(change==AudioManager.AUDIOFOCUS_LOSS||change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)stopSelf();}).build();if(manager.requestAudioFocus(focus)!=AudioManager.AUDIOFOCUS_REQUEST_GRANTED){stopSelf();return START_NOT_STICKY;}player=new MediaPlayer();player.setAudioAttributes(attr);player.setWakeMode(this,PowerManager.PARTIAL_WAKE_LOCK);try(android.content.res.AssetFileDescriptor fd=getAssets().openFd("Subuh".equals(prayer)?"fajr.mp3":"azan.mp3")){player.setDataSource(fd.getFileDescriptor(),fd.getStartOffset(),fd.getLength());}player.setOnCompletionListener(p->stopSelf());player.setOnErrorListener((p,a,b)->{stopSelf();return true;});player.prepare();player.start();}catch(Exception e){stopSelf();}return START_NOT_STICKY;}
+ private void release(){if(player!=null){player.release();player=null;}if(manager!=null&&focus!=null){manager.abandonAudioFocusRequest(focus);focus=null;}}
+ @Override public void onDestroy(){release();stopForeground(STOP_FOREGROUND_REMOVE);super.onDestroy();}
+}

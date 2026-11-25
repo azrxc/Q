@@ -1,0 +1,1 @@
+package my.waqt.app;import android.content.*;public class AlarmReceiver extends BroadcastReceiver {public void onReceive(Context c,Intent i){boolean valid=Alarms.valid(c,i);Alarms.arm(c);if(valid)try{c.startForegroundService(new Intent(c,AzanService.class).putExtra("prayer",i.getStringExtra("prayer")));}catch(Exception ignored){}}}

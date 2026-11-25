@@ -1,0 +1,40 @@
+name: Android family test build
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['android-native/**', 'index.html', 'community.js', '.github/workflows/android.yml']
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Prepare local web and licensed audio assets
+        run: |
+          set -euo pipefail
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+          a=android-native/app/src/main/assets
+          mkdir -p "$a"
+          cp index.html community.js icon.svg mosque.svg icon-192.png icon-512.png manifest.webmanifest sw.js "$a/"
+          curl --fail --location --retry 3 --user-agent 'Waqt/0.1 (github.com/azrxc/Q)' 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Beautiful_adhan.ogg' -o /tmp/adhan.ogg
+          curl --fail --location --retry 3 --user-agent 'Waqt/0.1 (github.com/azrxc/Q)' 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Eid_al-Fitr_Fajr_azan_at_Malm%C3%B6_Mosque_-_19_August_2012.webm' -o /tmp/fajr.webm
+          ffmpeg -v error -i /tmp/adhan.ogg -vn -ac 1 -b:a 96k "$a/azan.mp3"
+          ffmpeg -v error -i /tmp/fajr.webm -vn -ac 1 -b:a 96k "$a/fajr.mp3"
+          test -s "$a/azan.mp3" && test -s "$a/fajr.mp3"
+      - name: Compile Android debug APK
+        run: gradle -p android-native assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Waqt-Android-family-test
+          path: android-native/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
