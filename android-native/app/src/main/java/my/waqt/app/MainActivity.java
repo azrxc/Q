@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
  case "disable":Alarms.enabled(this,false);Alarms.cancel(this);Alarms.cancelTest(this);stopService(new Intent(this,AzanService.class));break;
  case "clear":Alarms.clear(this);Alarms.cancelTest(this);stopService(new Intent(this,AzanService.class));break;
  case "schedule":Alarms.save(this,m.getString("zone"),m.getJSONArray("slots"),m.optBoolean("enabled"));Alarms.arm(this);break;
+ case "pinWidget":android.appwidget.AppWidgetManager wm=android.appwidget.AppWidgetManager.getInstance(this);if(wm.isRequestPinAppWidgetSupported())wm.requestPinAppWidget(new ComponentName(this,PrayerWidget.class),null,null);else status("Tambah widget melalui skrin utama telefon.");return;
  case "permissions":if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},78);else requestExact();break;
  case "alarmTest":if(!Alarms.allowed(this)){requestExact();status("Benarkan penggera tepat, kemudian cuba ujian semula.");return;}Alarms.test(this);status("Ujian azan dijadualkan dalam 20 saat. Kunci skrin sekarang.");return;
  case "alertPrefs":Alarms.saveAlertPrefs(this,m.getJSONObject("prefs"));Alarms.arm(this);break;

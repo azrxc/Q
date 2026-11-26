@@ -1,0 +1,6 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center_vertical" android:padding="18dp" android:background="@drawable/widget_background">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="WAQT · SOLAT SETERUSNYA" android:textSize="11sp" android:textColor="#BEBEBE" android:textStyle="bold"/>
+<TextView android:id="@+id/widget_next" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Buka Waqt" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold"/>
+<TextView android:id="@+id/widget_time" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:textSize="18sp"/>
+<TextView android:id="@+id/widget_zone" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#BEBEBE" android:textSize="12sp"/>
+</LinearLayout>

@@ -9,8 +9,8 @@ final class Alarms {
  static boolean isEnabled(Context c){return prefs(c).getBoolean("enabled",false);}
  static void enabled(Context c,boolean v){prefs(c).edit().putBoolean("enabled",v).commit();}
  static void save(Context c,String zone,JSONArray slots,boolean en)throws Exception{
- if(!zone.matches("[A-Z]{3}[0-9]{2}")||slots.length()>1850)throw new IllegalArgumentException();JSONArray valid=new JSONArray();long now=System.currentTimeMillis(),limit=now+370L*86400000;
- for(int i=0;i<slots.length();i++){JSONObject a=slots.getJSONObject(i);long at=a.getLong("at");String p=a.getString("prayer");if(at>now&&at<limit&&Arrays.asList("Subuh","Zohor","Asar","Maghrib","Isyak").contains(p))valid.put(new JSONObject().put("at",at).put("prayer",p));}
+ if(!zone.matches("(?:[A-Z]{3}|MFSGR)[0-9]{2}")||slots.length()>1850)throw new IllegalArgumentException();JSONArray valid=new JSONArray();long now=System.currentTimeMillis(),limit=now+370L*86400000;
+ for(int i=0;i<slots.length();i++){JSONObject a=slots.getJSONObject(i);long at=a.getLong("at");String p=a.getString("prayer");if(at>now&&at<limit&&!(zone.startsWith("SGR")&&at>=1798732800000L)&&Arrays.asList("Subuh","Zohor","Asar","Maghrib","Isyak").contains(p))valid.put(new JSONObject().put("at",at).put("prayer",p));}
  if(valid.length()==0)throw new IllegalArgumentException();prefs(c).edit().putString("zone",zone).putString("slots",valid.toString()).putBoolean("enabled",en).commit();}
  static String mode(Context c,String p){return prefs(c).getString("mode:"+p,"full");}
  static int early(Context c,String p){return prefs(c).getInt("early:"+p,0);}
@@ -20,7 +20,7 @@ final class Alarms {
  static PendingIntent pending(Context c,JSONObject n){Intent i=new Intent(c,AlarmReceiver.class);if(n!=null){i.putExtra("at",n.optLong("at"));i.putExtra("prayer",n.optString("prayer"));i.putExtra("kind",n.optString("kind"));i.putExtra("baseAt",n.optLong("baseAt"));i.putExtra("lead",n.optInt("lead"));i.putExtra("zone",prefs(c).getString("zone",""));}return PendingIntent.getBroadcast(c,91,i,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);}
  static void cancel(Context c){c.getSystemService(AlarmManager.class).cancel(pending(c,null));}
  static void clear(Context c){cancel(c);prefs(c).edit().remove("zone").remove("slots").commit();}
- static void arm(Context c){cancel(c);if(!isEnabled(c)||!allowed(c))return;JSONObject n=next(c);if(n==null)return;PendingIntent show=PendingIntent.getActivity(c,92,new Intent(c,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);try{c.getSystemService(AlarmManager.class).setAlarmClock(new AlarmManager.AlarmClockInfo(n.optLong("at"),show),pending(c,n));}catch(SecurityException ignored){}}
+ static void arm(Context c){PrayerWidget.updateAll(c);cancel(c);if(!isEnabled(c)||!allowed(c))return;JSONObject n=next(c);if(n==null)return;PendingIntent show=PendingIntent.getActivity(c,92,new Intent(c,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);try{c.getSystemService(AlarmManager.class).setAlarmClock(new AlarmManager.AlarmClockInfo(n.optLong("at"),show),pending(c,n));}catch(SecurityException ignored){}}
  static PendingIntent testIntent(Context c,long at){return PendingIntent.getBroadcast(c,93,new Intent(c,AlarmReceiver.class).setAction("my.waqt.TEST").putExtra("at",at),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);}
  static void cancelTest(Context c){c.getSystemService(AlarmManager.class).cancel(testIntent(c,0));}
  static void test(Context c){long at=System.currentTimeMillis()+20000;PendingIntent show=PendingIntent.getActivity(c,92,new Intent(c,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);c.getSystemService(AlarmManager.class).setAlarmClock(new AlarmManager.AlarmClockInfo(at,show),testIntent(c,at));}
