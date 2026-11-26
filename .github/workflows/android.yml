@@ -63,6 +63,11 @@ jobs:
           curl --fail --location --retry 3 --user-agent 'Waqt/0.3 (github.com/azrxc/Q)' 'https://upload.wikimedia.org/wikipedia/commons/6/6d/Maghrib_Adhan_at_the_Masjid_al_Haram%2C_Mecca_-_25_Feb%2C_2012.webm' -o /tmp/voice-makkah
           ffmpeg -v error -ss 113 -i /tmp/voice-makkah -t 183 -vn -ac 1 -b:a 96k "$a/azan-makkah.mp3"
           test -s "$a/azan-makkah.mp3"
+      - name: Validate web JavaScript syntax
+        run: |
+          python3 -c 'import re,pathlib; s=pathlib.Path("index.html").read_text(); pathlib.Path("/tmp/waqt-inline.js").write_text("\n".join(re.findall(r"<script>(.*?)</script>",s,re.S)))'
+          node --check /tmp/waqt-inline.js
+          node --check community.js
       - name: Compile Android debug APK
         run: gradle -p android-native assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
