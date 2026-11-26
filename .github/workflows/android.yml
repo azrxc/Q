@@ -54,6 +54,15 @@ jobs:
           ffmpeg -v error -i /tmp/adhan.ogg -vn -ac 1 -b:a 96k "$a/azan.mp3"
           ffmpeg -v error -i /tmp/fajr.webm -vn -ac 1 -b:a 96k "$a/fajr.mp3"
           test -s "$a/azan.mp3" && test -s "$a/fajr.mp3"
+          curl --fail --location --retry 3 --user-agent 'Waqt/0.3 (github.com/azrxc/Q)' 'https://upload.wikimedia.org/wikipedia/commons/7/7c/33937_ejaz215_call-to-prayer-from-the-prophet-s-mo.ogg' -o /tmp/voice-medina
+          ffmpeg -v error -i /tmp/voice-medina -vn -ac 1 -b:a 96k "$a/azan-medina.mp3"
+          test -s "$a/azan-medina.mp3"
+          curl --fail --location --retry 3 --user-agent 'Waqt/0.3 (github.com/azrxc/Q)' 'https://upload.wikimedia.org/wikipedia/commons/8/86/Azan.ogg' -o /tmp/voice-alternative
+          ffmpeg -v error -i /tmp/voice-alternative -vn -ac 1 -b:a 96k "$a/azan-alternative.mp3"
+          test -s "$a/azan-alternative.mp3"
+          curl --fail --location --retry 3 --user-agent 'Waqt/0.3 (github.com/azrxc/Q)' 'https://upload.wikimedia.org/wikipedia/commons/6/6d/Maghrib_Adhan_at_the_Masjid_al_Haram%2C_Mecca_-_25_Feb%2C_2012.webm' -o /tmp/voice-makkah
+          ffmpeg -v error -ss 113 -i /tmp/voice-makkah -t 183 -vn -ac 1 -b:a 96k "$a/azan-makkah.mp3"
+          test -s "$a/azan-makkah.mp3"
       - name: Compile Android debug APK
         run: gradle -p android-native assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4

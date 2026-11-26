@@ -34,7 +34,8 @@ public class MainActivity extends Activity {
  case "schedule":Alarms.save(this,m.getString("zone"),m.getJSONArray("slots"),m.optBoolean("enabled"));Alarms.arm(this);break;
  case "permissions":if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},78);else requestExact();break;
  case "alarmTest":if(!Alarms.allowed(this)){requestExact();status("Benarkan penggera tepat, kemudian cuba ujian semula.");return;}Alarms.test(this);status("Ujian azan dijadualkan dalam 20 saat. Kunci skrin sekarang.");return;
- case "test":startForegroundService(new Intent(this,AzanService.class).putExtra("prayer",m.optString("prayer","Zohor")));break;
+ case "voices":Alarms.saveVoices(this,m.getJSONObject("voices"));return;
+ case "test":startForegroundService(new Intent(this,AzanService.class).putExtra("prayer",m.optString("prayer","Zohor")).putExtra("voice",m.optString("voice","")));break;
  case "stop":Alarms.cancelTest(this);stopService(new Intent(this,AzanService.class));break;
  }status(null);}
  private void status(String override){if(reply==null)return;try{boolean ready=Alarms.allowed(this)&&Alarms.isEnabled(this)&&Alarms.next(this)!=null;JSONObject j=new JSONObject();j.put("ready",ready);JSONObject next=ready?Alarms.next(this):null;if(next!=null){j.put("nextAt",next.optLong("at"));j.put("nextPrayer",next.optString("prayer"));}j.put("status",override!=null?override:!Alarms.isEnabled(this)?"Azan dimatikan.":!Alarms.allowed(this)?"Benarkan Penggera & peringatan dalam tetapan Android.":ready?"Penggera seterusnya telah disediakan.": "Pilih zon dan muat turun jadual dahulu.");reply.postMessage(j.toString());}catch(Exception ignored){}}

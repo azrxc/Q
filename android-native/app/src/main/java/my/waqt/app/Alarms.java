@@ -2,6 +2,9 @@ package my.waqt.app;
 import android.app.*;import android.content.*;import android.os.*;import org.json.*;import java.util.*;
 final class Alarms {
  static android.content.SharedPreferences prefs(Context c){return c.getSharedPreferences("waqt_alarms",0);}
+ static String allowedVoice(String prayer,String v){if("Subuh".equals(prayer))return "fajr";return Arrays.asList("regular","medina","alternative","makkah").contains(v)?v:"regular";}
+ static void saveVoices(Context c,JSONObject input){String[] keys={"Fajr","Dhuhr","Asr","Maghrib","Isha"},prayers={"Subuh","Zohor","Asar","Maghrib","Isyak"};android.content.SharedPreferences.Editor e=prefs(c).edit();for(int i=0;i<keys.length;i++)e.putString("voice:"+prayers[i],allowedVoice(prayers[i],input.optString(keys[i])));e.apply();}
+ static String audioFile(Context c,String prayer,String override){String actual="Ujian Azan".equals(prayer)?"Zohor":prayer;String selected=allowedVoice(actual,override!=null&&!override.isEmpty()?override:prefs(c).getString("voice:"+actual,"regular"));switch(selected){case "fajr":return "fajr.mp3";case "medina":return "azan-medina.mp3";case "alternative":return "azan-alternative.mp3";case "makkah":return "azan-makkah.mp3";default:return "azan.mp3";}}
  static boolean allowed(Context c){return Build.VERSION.SDK_INT<31||c.getSystemService(AlarmManager.class).canScheduleExactAlarms();}
  static boolean isEnabled(Context c){return prefs(c).getBoolean("enabled",false);}
  static void enabled(Context c,boolean v){prefs(c).edit().putBoolean("enabled",v).commit();}
